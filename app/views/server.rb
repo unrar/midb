@@ -18,4 +18,18 @@ class ServerView
   def self.server_stopped()
     puts "The server has been successfully stopped!"
   end
+
+  # Method: info
+  # Send some info
+  def self.info(what, info=nil)
+    msg = case what
+          when :start then "Server started on port #{info}. Listening for connections..."
+          when :incoming_request then "> Incoming request from #{info}."
+          when :request then ">> Request method: #{info[0]}\n>>> Endpoint: #{info[1]}"
+          when :match_json then ">> The request matched a JSON file: #{info}.json\n>> Creating response..."
+          when :response then ">> Sending JSON response (RAW):\n#{info}"
+          when :success then "> Successfully managed this request!"
+          end
+    puts msg
+  end
 end

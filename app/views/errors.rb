@@ -16,6 +16,7 @@ class ErrorsView
               when :file_404 then "File not found."
               when :not_json then "Specified file isn't JSON!"
               when :json_exists then "Specified file is already being served."
+              when :json_not_exists then "The JSON file isn't being served."
               else "Unknown error"
               end
     abort("Fatal error: #{errmsg}")

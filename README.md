@@ -1,30 +1,48 @@
-# midb v0.0.1a :no_good: #
+# midb v0.0.2a :no_good: #
 
 `midb` is **middleware for databases!** It helps you serve all the contents of your database via a simple API, and all
 you have to do is write a JSON file! And it's written using the [RMVC framework](https://github.com/unrar/rmvc) :heart_eyes: :ok_hand:
 
-## How does this work? 
-Please keep in mind that midb is a baby project, I just started prototyping it and it's not even half ready for use yet.
+## What can I do already?
+midb is more functional everyday, but take it easy. Basically, you can do nothing as we still haven't created the gem.
+When the first stable version is released, we'll create a branch for the gem, which will be the same code as this branch
+(the development, friendlier one) but organized differently. 
 
-The idea is that you can have a database (it will support many SQL and NoSQL engines) which you want (some) people to be 
-able to read and modify. Instead of creating a rather complicated API that will only work for this app, you can use midb!
+As of v0.0.2a, you can see all the contents in a table. For example, you have a database named `test` with a table `users` 
+and you want to create an API to list all the users. The fields are `uname` and `uage`, and the REQUIRED field `id`. Your `users.json` file should look like this:
 
-Say your database has a table named `USERS`, in the database `test`, with the columns `uname`, `uage` and `uid`. You want the API to be like this: `api.myapp.io/v1/users/1/name`, or `/age`. So tough, right? Well, midb is here to help! Create a JSON file like this:
-
-```
+```json
 {
-  "name": "users/uname",
-  "age": "users/uage",
-  "id": "users/uid" 
+  "id":
+  {
+    "name": "users/uname",
+    "age": "users/uage"
+  }
 }
 ```
 
-(Note that the `id` is for internal use only, there won't be an `/id` endpoint)
+You place this file in the `json` folder of your project, and set midb up to serve it:
 
-That's it! Then you just place this file in the `/json` folder of your midb project, and set it all up:
+```bash
+$ midb serve users.json
+$ midb start db:test
+```
 
-    $ midb serve users.json
-    $ midb start db:test
+There we go, now you can go to `localhost:8081/users` and you'll get something like this:
 
-That's it! Keep in mind this is only a prototype as the project has just been started, but that's sort of how
-it'll work.
+```json
+{
+  "1":
+  {
+  "name":"joselo",
+  "age":13
+  },
+  "2":
+  {
+  "name":"josefina",
+  "age":43
+  }
+}
+```
+
+Beautiful, innit?
