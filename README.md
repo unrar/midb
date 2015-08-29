@@ -1,7 +1,21 @@
-# midb v0.0.3a :no_good: #
+# midb v0.0.4a :no_good: #
 
 `midb` is **middleware for databases!** It helps you serve all the contents of your database via a simple API, and all
 you have to do is write a JSON file! And it's written using the [RMVC framework](https://github.com/unrar/rmvc) :heart_eyes: :ok_hand:
+
+## Setup
+If you use SQLite3 as your database, you don't really have to set anything up. Just make sure to put your `file.db` under the `db/` directory, and specify the database name when starting the server (`midb start db:file`).
+
+If you want to use MySQL, you have to set a few settings up:
+
+```bash
+$ midb set db:host localhost # the database host
+$ midb set db:user root      # the database user
+$ midb set db:password woot  # the user's password
+$ midb set db:engine mysql   # tell midb to use mysql
+```
+
+Afterwards, the process is the same for every engine. Add endpoints pointing to your JSON schemes with `midb serve file.json`, and just start the server with `midb start db:mydatabase`!
 
 ## What can I do already?
 midb is more functional everyday, but take it easy. Basically, you can do nothing as we still haven't created the gem.

@@ -17,6 +17,7 @@ class ErrorsView
               when :not_json then "Specified file isn't JSON!"
               when :json_exists then "Specified file is already being served."
               when :json_not_exists then "The JSON file isn't being served."
+              when :unsupported_engine then "The specified database engine isn't supported by midb."
               else "Unknown error"
               end
     abort("Fatal error: #{errmsg}")

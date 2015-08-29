@@ -1,4 +1,6 @@
 require './app/controllers/server_controller'
+require './app/models/dbengine'
+
 require 'sqlite3'
 require 'json'
 
@@ -17,10 +19,10 @@ class ServerModel
     @jsf = jsf
     jso = Hash.new()
  
-    # Connect to database (assuming SQLite)
-    dblink = SQLite3::Database.open("./db/#{db}.db")
-    dblink.results_as_hash = true
-    rows = dblink.execute("SELECT * FROM #{self.get_structure.values[0].split('/')[0]};")
+    # Connect to database
+    dbe = DbengineModel.new()
+    dblink = dbe.connect()
+    rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]};")
 
     # Iterate over all rows of this table
     rows.each do |row|
@@ -35,11 +37,11 @@ class ServerModel
           match = dbi.split("/")[2]
           matching_field = match.split("->")[0]
           row_field = match.split("->")[1]
-          query = dblink.execute("SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
+          query = dbe.query(dblink, "SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
         else
-          query = dblink.execute("SELECT #{field} from #{table} WHERE id=#{row['id']};")
+          query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
         end
-        jso[row["id"]][name] = query[0][field]
+        jso[row["id"]][name] = dbe.extract(query,field)
       end
     end
 

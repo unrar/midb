@@ -35,12 +35,63 @@ class ServerController
       # If the file doesn't exist it, create it with the default stuff
       @config["serves"] = []
       @config["status"] = :asleep  # The server is initially asleep
+      @config["dbengine"] = :sqlite3  # SQLite is the default engine
+      # Default DB configuration for MySQL and other engines
+      @config["dbhost"] = "localhost"
+      @config["dbport"] = 3306
+      @config["dbuser"] = "nobody"
+      @config["dbpassword"] = "openaccess" 
       File.open(".midb.yaml", 'w') do |l|
         l.write @config.to_yaml
       end
     end
 
     case @args[0]
+
+    # Command: set
+    # Sets configuration factors.
+    when "set"
+      # Check syntax
+      ErrorsView.die(:syntax) if @args.length < 2
+      subset = @args[1].split(":")[0]
+      subcmd = @args[1].split(":")[1]
+      set = @args.length < 3 ? false : true
+      setter = @args[2] if set
+      if subset == "db"
+        # DB Config
+        case subcmd
+        when "engine"
+          if set
+            @config["dbengine"] = case setter.downcase
+                                  when "sqlite3" then :sqlite3
+                                  when "mysql" then :mysql
+                                  else :undef
+                                  end
+            if @config["dbengine"] == :undef
+              ErrorsView.die(:unsupported_engine)
+              @config["dbengine"] = :sqlite3
+            end
+          end
+          ServerView.out_config(:dbengine)
+        when "host"
+          @config["dbhost"] = setter if set
+          ServerView.out_config(:dbhost)
+        when "port"
+          @config["dbport"] = setter if set
+          ServerView.out_config(:dbport)
+        when "user"
+          @config["dbuser"] = setter if set
+          ServerView.out_config(:dbuser)
+        when "password"
+          @config["dbpassword"] = setter if set
+          ServerView.out_config(:dbpassword)
+        else
+          ErrorsView.die(:synax)
+        end
+      else
+        ErrorsView.die(:syntax)
+      end
+
 
     # Command: start
     # Starts the server
@@ -133,8 +184,10 @@ class ServerController
       end
 
       # Load the endpoints
+      found = false
       endpoints.each do |ep|
         if ep_file == ep
+          found = true
           ServerView.info(:match_json, ep)
           # Analyze the request and pass it to the model
           case endpoint.length
@@ -154,6 +207,24 @@ class ServerController
           socket.print "\r\n"
           ServerView.info(:success)
         end
+      end
+      unless found
+        ServerView.info(:not_found)
+        message = Hash.new()
+        message["error"] = Hash.new()
+        message["error"]["errno"] = 404
+        message["error"]["msg"] = "The API endpoint isn't valid."
+        response = message.to_json
+
+
+        socket.print "HTTP/1.1 404 Not Found\r\n" +
+                     "Content-Type: text/json\r\n" +
+                     "Content-Length: #{response.size}\r\n" +
+                     "Connection: close\r\n"
+
+        socket.print "\r\n"
+
+        socket.print response
       end
     end
   end

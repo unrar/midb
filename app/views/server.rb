@@ -29,6 +29,21 @@ class ServerView
           when :match_json then ">> The request matched a JSON file: #{info}.json\n>> Creating response..."
           when :response then ">> Sending JSON response (RAW):\n#{info}"
           when :success then "> Successfully managed this request!"
+          when :not_found then "> Invalid endpoint - sending a 404 error."
+          end
+    puts msg
+  end
+
+  # Method: out_config
+  # Output some config
+  def self.out_config(what)
+    msg = case what
+          when :dbengine then "Database engine: #{ServerController.config['dbengine']}."
+          when :dbhost then "Database server host: #{ServerController.config['dbhost']}."
+          when :dbport then "Database server port: #{ServerController.config['dbport']}."
+          when :dbuser then "Database server user: #{ServerController.config['dbuser']}."
+          when :dbpassword then "Database server password: #{ServerController.config['dbpassword']}."
+          else "Error??"
           end
     puts msg
   end
