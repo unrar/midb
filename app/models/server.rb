@@ -30,7 +30,15 @@ class ServerModel
       self.get_structure.each do |name, dbi|
         table = dbi.split("/")[0]
         field = dbi.split("/")[1]
-        query = dblink.execute("SELECT #{field} from #{table} WHERE id=#{row['id']};")
+        # Must-match relations ("table2/field/table2-field->row-field")
+        if dbi.split("/").length > 2
+          match = dbi.split("/")[2]
+          matching_field = match.split("->")[0]
+          row_field = match.split("->")[1]
+          query = dblink.execute("SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
+        else
+          query = dblink.execute("SELECT #{field} from #{table} WHERE id=#{row['id']};")
+        end
         jso[row["id"]][name] = query[0][field]
       end
     end
