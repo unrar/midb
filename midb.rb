@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 ## midb: middleware for databases! ##
 # 08/27/15, unrar
 require './app/controllers/server_controller'

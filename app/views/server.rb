@@ -4,6 +4,12 @@ class ServerView
     puts "Ayyy great"
   end
 
+  # Method: json_error
+  # Return a JSON error response
+  def self.json_error(errno, msg)
+    return {"error" => {"errno" => errno, "msg" => msg}}.to_json
+  end
+
   # Method: show_serving
   # Shows the files being served
   def self.show_serving()
@@ -30,6 +36,9 @@ class ServerView
           when :response then ">> Sending JSON response (RAW):\n#{info}"
           when :success then "> Successfully managed this request!"
           when :not_found then "> Invalid endpoint - sending a 404 error."
+          when :auth_required then ">> Authentication required. Checking for the HTTP header..."
+          when :no_auth then ">> No authentication header - sending a 401 error."
+          when :auth_success then ">> Successfully authenticated the request."
           end
     puts msg
   end

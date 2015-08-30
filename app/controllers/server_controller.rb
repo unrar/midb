@@ -223,28 +223,28 @@ class ServerController
             end
           else
             # An action has been specified. We're going to need HTTP authentification here.
-            unless SecurityController.check?(headers["Authentication"], data, @config["apikey"])
-              @http_status = "403 Forbidden"
-              jsr = Hash.new()
-              jsr["error"] = Hash.new()
-              jsr["error"]["errno"] = 403
-              jsr["error"]["msg"] = "Unsuccessful authentication - access forbidden."
-              response_json = jsr.to_json
+            ServerView.info(:auth_required)
+
+            if (not headers.has_key? "Authentication") ||
+               (not SecurityController.check?(headers["Authentication"], data, @config["apikey"]))
+              @http_status = "401 Unauthorized"
+              response_json = ServerView.json_error(401, "Unauthorized")
+              ServerView.info(:no_auth)
+
             else
+              ServerView.info(:auth_success)
               if method == "POST"
                 response_json = ServerModel.post(@db, ep, data).to_json
               else
                 if endpoint.length >= 3
                   if method == "DELETE"
-                    response_json = ServerModel.delete(@db, ep, endpoint[2]) 
+                    response_json = ServerModel.delete(@db, ep, endpoint[2]).to_json 
                   elsif method == "PUT"
-                    response_json = ServerModel.put(@db, ep, endpoint[2], data)
+                    response_json = ServerModel.put(@db, ep, endpoint[2], data).to_json
                   end
                 else
-                  jsr = Hash.new()
-                  jsr["error"] = Hash.new()
-                  jsr["error"]["errno"] = 404
-                  jsr["error"]["msg"] = "ID not specified."
+                  @http_status = "404 Not Found"
+                  response_json = ServerView.json_error(404, "Must specify an ID.")
                 end
               end
             end
@@ -263,20 +263,13 @@ class ServerController
       end
       unless found
         ServerView.info(:not_found)
-        message = Hash.new()
-        message["error"] = Hash.new()
-        message["error"]["errno"] = 404
-        message["error"]["msg"] = "The API endpoint isn't valid."
-        response = message.to_json
-
+        response = ServerView.json_error(404, "Invalid API endpoint.")
 
         socket.print "HTTP/1.1 404 Not Found\r\n" +
                      "Content-Type: text/json\r\n" +
                      "Content-Length: #{response.size}\r\n" +
                      "Connection: close\r\n"
-
         socket.print "\r\n"
-
         socket.print response
       end
     end
