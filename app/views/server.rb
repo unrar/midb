@@ -43,6 +43,7 @@ class ServerView
           when :dbport then "Database server port: #{ServerController.config['dbport']}."
           when :dbuser then "Database server user: #{ServerController.config['dbuser']}."
           when :dbpassword then "Database server password: #{ServerController.config['dbpassword']}."
+          when :apikey then "Private API key: #{ServerController.config['apikey']}"
           else "Error??"
           end
     puts msg

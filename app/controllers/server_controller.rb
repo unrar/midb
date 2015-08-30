@@ -1,6 +1,7 @@
 require './app/models/server'
 require './app/views/server'
 require './app/views/errors'
+require './app/controllers/security_controller'
 
 require 'yaml'
 require 'socket'
@@ -15,10 +16,12 @@ class ServerController
     # args[] => passed by the binary
     # config => configuration array saved and loaded from .midb.yaml
     # db => the database we're using
-    attr_accessor :args, :config, :db
+    # http_status => the HTTP status, sent by the model
+    attr_accessor :args, :config, :db, :http_status
   end
   # status => server status
   # serves[] => JSON files served by the API
+  @http_status = "200 OK"
   @args = []
   @config = Hash.new()
 
@@ -34,7 +37,8 @@ class ServerController
     else
       # If the file doesn't exist it, create it with the default stuff
       @config["serves"] = []
-      @config["status"] = :asleep  # The server is initially asleep
+      @config["status"] = :asleep    # The server is initially asleep
+      @config["apikey"] = "midb-api" # This should be changed, it's the private API key
       @config["dbengine"] = :sqlite3  # SQLite is the default engine
       # Default DB configuration for MySQL and other engines
       @config["dbhost"] = "localhost"
@@ -57,7 +61,8 @@ class ServerController
       subcmd = @args[1].split(":")[1]
       set = @args.length < 3 ? false : true
       setter = @args[2] if set
-      if subset == "db"
+      case subset
+      when "db"
         # DB Config
         case subcmd
         when "engine"
@@ -87,6 +92,12 @@ class ServerController
           ServerView.out_config(:dbpassword)
         else
           ErrorsView.die(:synax)
+        end
+      when "api"
+        case subcmd
+        when "key"
+          @config["apikey"] = setter if set
+          ServerView.out_config(:apikey)
         end
       else
         ErrorsView.die(:syntax)
@@ -167,6 +178,16 @@ class ServerController
       ServerView.info(:incoming_request, socket.addr[3])
 
       request = self.parse_request(socket.gets)
+
+      # Get a hash with the headers
+      headers = {}
+      while line = socket.gets.split(' ', 2)
+        break if line[0] == "" 
+        headers[line[0].chop] = line[1].strip
+      end
+      data = socket.read(headers["Content-Length"].to_i)
+
+
       ServerView.info(:request, request)
       response_json = Hash.new()
 
@@ -190,15 +211,47 @@ class ServerController
           found = true
           ServerView.info(:match_json, ep)
           # Analyze the request and pass it to the model
-          case endpoint.length
-          when 2
-            # No ID has been specified. Return all the entries
-            # Pass it to the model and get the JSON
-            response_json = ServerModel.get_all_entries(@db, ep).to_json
+          if method == "GET"
+            case endpoint.length
+            when 2
+              # No ID has been specified. Return all the entries
+              # Pass it to the model and get the JSON
+              response_json = ServerModel.get_all_entries(@db, ep).to_json
+            when 3
+              # An ID has been specified. Should it exist, return all of its entries.
+              response_json = ServerModel.get_entries(@db, ep, endpoint[2]).to_json
+            end
+          else
+            # An action has been specified. We're going to need HTTP authentification here.
+            unless SecurityController.check?(headers["Authentication"], data, @config["apikey"])
+              @http_status = "403 Forbidden"
+              jsr = Hash.new()
+              jsr["error"] = Hash.new()
+              jsr["error"]["errno"] = 403
+              jsr["error"]["msg"] = "Unsuccessful authentication - access forbidden."
+              response_json = jsr.to_json
+            else
+              if method == "POST"
+                response_json = ServerModel.post(@db, ep, data).to_json
+              else
+                if endpoint.length >= 3
+                  if method == "DELETE"
+                    response_json = ServerModel.delete(@db, ep, endpoint[2]) 
+                  elsif method == "PUT"
+                    response_json = ServerModel.put(@db, ep, endpoint[2], data)
+                  end
+                else
+                  jsr = Hash.new()
+                  jsr["error"] = Hash.new()
+                  jsr["error"]["errno"] = 404
+                  jsr["error"]["msg"] = "ID not specified."
+                end
+              end
+            end
           end
           ServerView.info(:response, response_json)
           # Return the results via HTTP
-          socket.print "HTTP/1.1 200 OK\r\n" +
+          socket.print "HTTP/1.1 #{@http_status}\r\n" +
                       "Content-Type: text/json\r\n" +
                       "Content-Length: #{response_json.size}\r\n" +
                       "Connection: close\r\n"
