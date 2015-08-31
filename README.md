@@ -1,4 +1,4 @@
-# midb v1.0.0a :no_good: #
+# midb v1.0.0a :no_good: [![Gem Version](https://badge.fury.io/rb/midb.svg)](http://badge.fury.io/rb/midb) [![Build Status](https://travis-ci.org/unrar/midb.svg)](https://travis-ci.org/unrar/midb) #
 
 `midb` is **middleware for databases!** It helps you serve all the contents of your database via a simple API, and all
 you have to do is write a JSON file! And it's written using the [RMVC framework](https://github.com/unrar/rmvc) :heart_eyes: :ok_hand:
