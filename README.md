@@ -1,9 +1,17 @@
-# midb v0.0.4a :no_good: #
+# midb v1.0.0a :no_good: #
 
 `midb` is **middleware for databases!** It helps you serve all the contents of your database via a simple API, and all
 you have to do is write a JSON file! And it's written using the [RMVC framework](https://github.com/unrar/rmvc) :heart_eyes: :ok_hand:
 
+This is the first stable release of midb! Because now it's a gem, the structure of the project has changed quite a bit. To see the old (0.0.x) draft-releases, check out the `master` branch - but from now on, everything is going to happen in the `gem` branch!
+
 ## Setup
+Before doing anything, you have to bootstrap your midb project!
+
+```bash
+$ midb bootstrap
+```
+
 If you use SQLite3 as your database, you don't really have to set anything up. Just make sure to put your `file.db` under the `db/` directory, and specify the database name when starting the server (`midb start db:file`).
 
 If you want to use MySQL, you have to set a few settings up:
@@ -17,75 +25,96 @@ $ midb set db:engine mysql   # tell midb to use mysql
 
 Afterwards, the process is the same for every engine. Add endpoints pointing to your JSON schemes with `midb serve file.json`, and just start the server with `midb start db:mydatabase`!
 
-## What can I do already?
-midb is more functional everyday, but take it easy. Basically, you can do nothing as we still haven't created the gem.
-When the first stable version is released, we'll create a branch for the gem, which will be the same code as this branch
-(the development, friendlier one) but organized differently. 
-
-As of v0.0.3a, you can see all the contents in a table. For example, you have a database named `test` with a table `users` 
-and you want to create an API to list all the users. The fields are `uname` and `uage`, and the REQUIRED field `id`. Your `users.json` file should look like this:
-
-```json
-{
-  "id":
-  {
-    "name": "users/uname",
-    "age": "users/uage"
-  }
-}
-```
-
-You place this file in the `json` folder of your project, and set midb up to serve it:
+You probably want to change the default private API key (`midb-api`), which is used in POST, PUT and DELETE requests (see **Authentication** at wiki):
 
 ```bash
-$ midb serve users.json
-$ midb start db:test
+$ midb set api:key mynewapikey
 ```
 
-There we go, now you can go to `localhost:8081/users` and you'll get something like this:
+## Working with midb
+The point of midb is that you barely have to write anything - just tweak the settings so it works with your database, write a couple JSON files and you're done!
 
-```json
-{
-  "1":
-  {
-  "name":"joselo",
-  "age":13
-  },
-  "2":
-  {
-  "name":"josefina",
-  "age":43
-  }
-}
-```
+For a more detailed specification you can check the wiki, but long story short the point of the JSON files is to map and API endpoint like `api.io/users/5` to your database, like maybe the row with id 5 of the table `current_users`. Think of the JSON files like a template - they are a scheme of the replies your API will send to GET requests, and of the POST/PUT requests.
 
-## midb JSON syntax
-midb uses a special JSON syntax, which is quite simple. The only rule you MUST follow is that *there must be
-an ID field, named "id", in all the tables you want to use*. It's that simple. In future releases, we'll let
-you change the name of the column, but at the moment there's no choice.
+The only mandatory requisite of the JSON files is that **it must have an "id" key**, which has the whole structure/scheme as a value. This means your tables MUST have an `id` column.
 
-In the served `.json` files, you're explaining the structure of your database, and how it relates to the API that'll
-be built. To do so, consider the JSON file an example response of ONE row of your database (one user, one client...).
+Another feature of the later releases is that you can set relations between tables. For instance, imagine you have a table `users` and a table `passwords`. You don't really want to create two separate endpoints, as the passwords are linked to your users. So what to do you? 
 
-In the keys, you provide the human-friendly name of the field, used in the response JSON and in the API. In the values,
-you tell midb how to find the value in your database, using a very simple syntax: `table_name/field_name`. It's that simple!
+In this example, we set a column `uid` in the `passwords` table, that contains the ID of the user whose password is in the `password` column. Great! But how do we tell midb that? 
+We use a very simple syntax. First, regular-old midb syntax: `table_name/column_name`. But then, if you want to link it to another field, you do it like this: `this_field->main_table_field`. This means: *this field must match this other field, which is in the main table*. **The main table is the one stated in the first key of the scheme**.
 
-As of v0.0.3a, though, you can also specify **relations** between tables. Say you have a table `employees` and a table `passwords`. The `employees` table contains their information, like the name (`ename`) and the salary (`esalary`), along with their `id`. The `passwords` table contains the passwords for the employees to login to your site, but they're not stored in the same order - the password with ID 1 doesn't necessarily belong to the employee with ID 1. So you add a field `password` containing the password, and a field `eid` containing the ID of the employee, that points to the main table (employees).
+The JSON file resulting from our example would look as follows:
 
-**NOTE**: The "main table" is always the one specified in the first JSON field, in this example `employees`.
-
-How do you tell midb that? Very simply, using an easy notation: `passwords/password/eid->id`. That is, your first specify the table, then the field you want to get, then the field you want to link, and after the `->` the field in the main table. 
-
-See this JSON example:
+`users.json`
 
 ```json
 {
   "id":
   {
-    "name": "employees/ename",
-    "salary": "employees/esalary",
-    "age": "employees/eage",
-    "password": "passwords/password/eid->id"
+  "name": "users/uname",
+  "age": "users/uage",
+  "password": "passwords/password/uid->id"
   }
-} 
+}
 ```
+
+Then, we'd start the server (`$ midb start db:dbName`) and we'd obtain a pretty nice REST API running on our 8081 port. Using `client.rb` (with a little tweaking, as it's meant only for testing purposes and all values are set for my example/test API) we could have a conversation like this:
+
+```
+> GET /users
+>> {"1": {"name": "Bob", "age": 31, "password": "stalker"}, "2": {"name": "josh", "age": 14, "password": "kiddo"}}
+
+> POST /users name=amy&age=16&password=ifuseekamy
+>> {"status": "201 Created", "id": 3}
+
+> GET /users/3
+>> {"3": {"name": "amy", "age": 16, "password": "ifuseekamy"}}
+
+> PUT /users/3 name=Amy&age=21
+>> {"status": "200 OK"}
+
+> GET /users/3
+>> {"3": {"name": "Amy", "age": 21, "password": "ifuseekamy"}}
+
+> DELETE /users/3
+>> {"status": "200 OK"}
+```
+
+All of that, without doing much more than writing a JSON file!
+
+## Authentication 101
+midb uses HTTP HMAC authentication, through a private key. In GET requests, authentication is not used, but in POST/PUT/DELETE requests you must be authenticated or you'll get a 401 error. 
+
+How do we authenticate? It's quite easy. We have to send the server an `Authentication` HTTP request, following this structure: `Authentication: hmac MY_DIGEST`.
+
+Oh, boy, what that digest thing? It's easy. You have to create an HMAC of **your request's body** (the data you're sending to the server, usually it's just a query string) using the private API key that you've previously set on the server using `midb set api:key`.
+
+Here's an example, taken from my test `client.rb` and using `httpclient`:
+
+```ruby
+require 'httpclient'
+require 'hmac-sha1'
+require 'base64'
+require 'cgi'
+require 'uri'
+
+def create_header(body)
+  key = "midb-api" ## Default API key - change this with yours!
+  signature = URI.encode_www_form(body) # Turns the POST params into an encoded query string
+  hmac = HMAC::SHA1.new(key)
+  hmac.update(signature)
+  {"Authentication" =>"hmac " + CGI.escape(Base64.encode64("#{hmac.digest}"))}
+end
+
+c = HTTPClient.new
+
+# Insert something
+body = {"name" => "unrar", "age" => 17, "password" => "can_you_not!"}
+header = create_header(body)
+res = c.post("http://localhost:8081/test/", body=body, header=header)
+```
+
+This is of course an example - HMAC HTTP authentication is widely used, but I've only tested this method in the example as I'm 100% it'll work because the server does the same (that's the point of HMAC authentication).
+
+## I need more help!
+I'm building the wiki! Soon, you'll have a whole guide for you. :flushed:

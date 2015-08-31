@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+## midb: middleware for databases! ##
+# 08/31/15, unrar
+require 'midb'
+
+# Pass the arguments to the controler, we don't want the action here ;-)
+MIDB::ServerController.args = ARGV
+
+# And start the server
+MIDB::ServerController.init()
+
+# Save data in case we didn't actually start the server but change the configuration
+MIDB::ServerController.save()
