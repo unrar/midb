@@ -12,23 +12,33 @@ require 'sqlite3'
 module MIDB
   # This controller controls the behavior of the midb server.
   class ServerController
-    # Variable declaration
+
+     # Attribute declaration here
     class << self
-      # args[] => passed by the binary
-      # config => configuration array saved and loaded from .midb.yaml
-      # db => the database we're using
-      # http_status => the HTTP status, sent by the model
+      # @!attribute args
+      #   @return [Array<String>] Arguments passed to the binary.
+      # @!attribute config
+      #   @return [Hash] Contains the project's configuration, saved in .midb.yaml
+      # @!attribute db
+      #   @return [String] Database name (if SQLite is the engine, file name without extension)
+      # @!attribute http_status
+      #   @return [String] HTTP status code and string representation for the header
+      # @!attribute port
+      #   @return [Fixnum] Port where the server will listen.
       attr_accessor :args, :config, :db, :http_status, :port
     end
-    # status => server status
-    # serves[] => JSON files served by the API
+    # Default values
+    #
+    # @see #http_status
+    # @see #args
+    # @see #config
+    # @see #port
     @http_status = "200 OK"
     @args = []
     @config = Hash.new()
     @port = 8081
 
-    # Method: init
-    # Decide what to do according to the supplied command!
+    # Decide the server's behavior depending on the arguments. 
     def self.init()
       # We should have at least one argument, which can be `run` or `serve`
       MIDB::ErrorsView.die(:noargs) if @args.length < 1

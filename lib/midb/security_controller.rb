@@ -2,29 +2,40 @@ require 'hmac-sha1'
 require 'base64'
 require 'cgi'
 
-# midb security controller - handles API authentication 
-# this will probably become another different project soon!
 module MIDB
+  # Controller that handles API HMAC authentication.
+  # 
+  # @note This will probably become a separate project soon.
   class SecurityController
 
-    # Method: is_auth?
     # Checks if an HTTP header is the authorization one
+    #
+    # @deprecated It's no longer used but kept for historical reasons.
+    # @param header [String] A line of an HTTP header.
+    # @return [Boolean] Whether it's an auth header or not.
     def self.is_auth?(header)
        return header.split(":")[0].downcase == "authentication"
     end
 
-    # Method: parse_auth
-    # Parses an authentication header
+    # Parses an authentication header so to get the HMAC digest.
+    #
+    # @param header [String] A line of an HTTP header (should have been checked
+    #                         to be an auth header)
+    # @return [String] The HMAC digest as a string.
     def self.parse_auth(header)
       return header.split(" ")[1]
     end
 
-    # Method: check?
-    # Checks if an HMAC digest is properly authenticated
+    # Checks if an HMAC digest is properly authenticated.
+    # 
+    # @param header [String] A line of an HTTP header (see #parse_auth)
+    # @param params [String] The data passed via the HTTP request.
+    # @param key [String] The private API key.
+    #
+    # @return [Boolean] Whether the given digest matches the correct one or not.
     def self.check?(header, params, key)
-      signature = params
       hmac = HMAC::SHA1.new(key)
-      hmac.update(signature)
+      hmac.update(params)
       return self.parse_auth(header) == CGI.escape(Base64.encode64("#{hmac.digest}"))
     end
   end

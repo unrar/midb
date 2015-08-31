@@ -1,11 +1,12 @@
 require 'midb/server_controller'
 
-# This controller handles errors.
 module MIDB
+  # A view that outputs errors.
   class ErrorsView
-    # Method: die
-    # Handles arguments that cause program termination.
-    # Errors: :noargs, :server_already_started
+
+    # Handles fatal errors that will cause the application to abrort.
+    # 
+    # @param err [Symbol] The ID of the error that's to be reported.
     def self.die(err)
       errmsg =  case err
                 when :noargs then "No command supplied. See `midb help`."
@@ -25,7 +26,6 @@ module MIDB
                 else "Unknown error: #{err.to_s}"
                 end
       abort("Fatal error: #{errmsg}")
-
     end
   end
 end
