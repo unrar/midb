@@ -118,7 +118,7 @@ module MIDB
       db = MIDB::DbengineModel.new
       dbc = db.connect()
       dbq = db.query(dbc, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]} WHERE id=#{id};")
-      unless dbq.length > 0
+      unless db.length(dbq) > 0
         resp = MIDB::ServerView.json_error(404, "ID not found")
         MIDB::ServerController.http_status = 404
         bad_request = true
@@ -174,7 +174,7 @@ module MIDB
       db = MIDB::DbengineModel.new
       dbc = db.connect()
       dbq = db.query(dbc, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]} WHERE id=#{id};")
-      if not dbq.length > 0
+      if not db.length(dbq) > 0
         resp = MIDB::ServerView.json_error(404, "ID not found").to_json
         MIDB::ServerController.http_status = 404
         bad_request = true
@@ -228,7 +228,7 @@ module MIDB
       dbe = MIDB::DbengineModel.new()
       dblink = dbe.connect()
       rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]} WHERE id=#{id};")
-      if rows.length > 0
+      if dblink.length(rows) > 0
         rows.each do |row|
           jso[row["id"]] = self.get_structure
 
