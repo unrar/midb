@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 ### Added
 - This changelog, to keep the changes of this project.
+### Changed
+- Adding changelog links.
 
 ## [1.0.4] - 2015-11-05
 ### Added
@@ -20,3 +22,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 - Cleaned up old gem files.
+
+
+[Unreleased]: https://github.com/unrar/midb/compare/v1.0.4...HEAD
+[1.0.4]: https://github.com/unrar/midb/compare/v1.0.0...v1.0.4
