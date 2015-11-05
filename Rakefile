@@ -3,11 +3,11 @@ task :build_gem do
 end
 
 task :install_gem do
-  sh "gem install midb-1.0.3.gem"
+  sh "gem install midb-1.0.4.gem"
 end
 
 task :clean do
-  sh "rm midb-1.0.3.gem"
+  sh "rm midb-1.0.4.gem"
   sh "gem uninstall midb"
 end
 

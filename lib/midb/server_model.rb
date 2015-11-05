@@ -228,7 +228,7 @@ module MIDB
       dbe = MIDB::DbengineModel.new()
       dblink = dbe.connect()
       rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]} WHERE id=#{id};")
-      if dblink.length(rows) > 0
+      if dbe.length(rows) > 0
         rows.each do |row|
           jso[row["id"]] = self.get_structure
 
