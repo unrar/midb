@@ -75,5 +75,18 @@ module MIDB
         end
       end
     end
+
+    # Returns the length of a result, because different engines return diferent types (see #query)
+    #
+    # @param result [Array, Hash] The result of a query obtained via #query
+    # 
+    # @return [Fixnum] Length of the result.
+    def length(result)
+      if @engine == :sqlite3
+        return result.length
+      elsif @engine == :mysql 
+        return result.count
+      end
+    end
   end
 end

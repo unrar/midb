@@ -244,7 +244,7 @@ module MIDB
             else
               query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
             end
-            jso[row["id"]][name] = query.length > 0 ? dbe.extract(query,field) : "unknown"
+            jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
           end
         end
         MIDB::ServerController.http_status = "200 OK"
@@ -284,7 +284,7 @@ module MIDB
           else
             query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
           end
-          jso[row["id"]][name] = query.length > 0 ? dbe.extract(query,field) : "unknown"
+          jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
         end
       end
       return jso
