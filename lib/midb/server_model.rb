@@ -65,7 +65,7 @@ module MIDB
             matching_field = match.split("->")[0]
             row_field = match.split("->")[1]
             fields[table].push matching_field
-            if MIDB::ServerController.config["dbengine"] == "mysql"
+            if MIDB::ServerController.config["dbengine"] == :mysql
               inserts[table].push "(SELECT #{row_field} FROM #{main_table} WHERE id=(SELECT LAST_INSERT_ID()))"
             else
               inserts[table].push "(SELECT #{row_field} FROM #{main_table} WHERE id=(last_insert_rowid()))"
@@ -84,7 +84,7 @@ module MIDB
         # Find the ID to return in the response (only for the first query)
         queries.each do |q|
           results.push dbe.query(dblink, q)
-          if MIDB::ServerController.config["dbengine"] == "mysql"
+          if MIDB::ServerController.config["dbengine"] == :mysql
             rid ||= dbe.extract(dbe.query(dblink, "SELECT id FROM #{main_table} WHERE id=(SELECT LAST_INSERT_ID());"), "id")
           else
             rid ||= dbe.extract(dbe.query(dblink, "SELECT id FROM #{main_table} WHERE id=(last_insert_rowid());"), "id")

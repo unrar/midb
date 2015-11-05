@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'midb'
-  s.version     = '1.0.1'
+  s.version     = '1.0.2'
   s.date        = '2015-11-05'
   s.summary     = 'Middleware for databases'
   s.description = 'Automatically create a RESTful API for your database, all you need to write is a JSON file!'
