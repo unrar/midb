@@ -1,8 +1,8 @@
+require 'midb/server_controller'
 require 'midb/server_model'
 require 'midb/server_view'
 require 'midb/errors_view'
 require 'midb/security_controller'
-require 'midb/server_controller'
 
 require 'yaml'
 require 'socket'
@@ -24,15 +24,16 @@ module MIDB
       #   @return [String] HTTP status code and string representation for the header
       attr_accessor :config, :db, :http_status
     end
-    # Copy these values from the server controller
-    @http_status = MIDB::ServerController.http_status
-    @config = MIDB::ServerController.config
-    @db = MIDB::ServerController.db
+
 
     # Starts the server on a given port (default: 8081)
     #
     # @param port [Fixnum] Port to which the server will listen.
     def self.start(port=8081)
+      # Copy these values from the server controller
+      @http_status = MIDB::ServerController.http_status
+      @config = MIDB::ServerController.config
+      @db = MIDB::ServerController.db
       serv = TCPServer.new("localhost", port)
       MIDB::ServerView.info(:start, port)
 
