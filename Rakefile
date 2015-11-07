@@ -1,3 +1,5 @@
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
 task :build_gem do
   sh "gem build midb.gemspec"
 end
