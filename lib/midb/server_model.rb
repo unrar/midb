@@ -91,7 +91,7 @@ module MIDB
           end
         end
         MIDB::ServerController.http_status = "201 Created"
-        resp = {"status": "201 created", "id": rid}
+        resp = {status: "201 created", id: rid}
       end
       return resp
     end
@@ -163,7 +163,7 @@ module MIDB
           results.push db.query(dbc, q)
         end
         MIDB::ServerController.http_status = "200 OK"
-        resp = {"status": "200 OK"}
+        resp = {status: "200 OK"}
       end
       return resp
     end
@@ -214,7 +214,7 @@ module MIDB
           results.push db.query(dbc, query)
         end
         MIDB::ServerController.http_status = "200 OK"
-        resp = {"status": "200 OK"}
+        resp = {status: "200 OK"}
       end
       return resp
     end
