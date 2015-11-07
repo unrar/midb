@@ -144,3 +144,5 @@ module MIDB
     def self.parse_request(req)
       [req.split(" ")[0], req.split(" ")[1]]
     end
+  end
+end
