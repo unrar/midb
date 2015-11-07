@@ -1,4 +1,6 @@
-# midb v1.0.5 :no_good: [![Gem Version](https://badge.fury.io/rb/midb.svg)](http://badge.fury.io/rb/midb) [![Build Status](https://travis-ci.org/unrar/midb.svg)](https://travis-ci.org/unrar/midb) [![Inline docs](http://inch-ci.org/github/unrar/midb.svg?branch=gem&style=shields)](http://inch-ci.org/github/unrar/midb) [![Code Climate](https://codeclimate.com/github/unrar/midb/badges/gpa.svg)](https://codeclimate.com/github/unrar/midb) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/unrar/midb/badges/quality-score.png?b=gem)](https://scrutinizer-ci.com/g/unrar/midb/?branch=gem)
+# midb v1.0.5 :no_good: 
+
+[![Gem Version](https://badge.fury.io/rb/midb.svg)](http://badge.fury.io/rb/midb) [![Build Status](https://travis-ci.org/unrar/midb.svg)](https://travis-ci.org/unrar/midb) [![Inline docs](http://inch-ci.org/github/unrar/midb.svg?branch=gem&style=shields)](http://inch-ci.org/github/unrar/midb) [![Code Climate](https://codeclimate.com/github/unrar/midb/badges/gpa.svg)](https://codeclimate.com/github/unrar/midb) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/unrar/midb/badges/quality-score.png?b=gem)](https://scrutinizer-ci.com/g/unrar/midb/?branch=gem)
 
 `midb` is **middleware for databases!** It helps you serve all the contents of your database via a simple API, and all
 you have to do is write a JSON file! And it's written using the [RMVC framework](https://github.com/unrar/rmvc) :heart_eyes: :ok_hand:
