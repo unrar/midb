@@ -1,2 +1,4 @@
 .midb.yaml
 .rmvc
+.rspec
+Gemfile.lock

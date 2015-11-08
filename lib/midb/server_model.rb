@@ -7,7 +7,9 @@ require 'json'
 require 'cgi'
 module MIDB
   class ServerModel
-    attr_accessor :jsf
+    class << self
+      attr_accessor :jsf
+    end
 
     # Method: get_structure
     # Safely get the structure

@@ -8,11 +8,15 @@ task :install_gem do
   sh "gem install midb-1.0.5.gem"
 end
 
+task :test do
+  sh "rspec spec"
+end
+
 task :clean do
   sh "rm midb-*.gem"
   sh "gem uninstall midb"
 end
 
-task :default => [:clean, :build_gem, :install_gem] do
+task :default => [:clean, :build_gem, :install_gem, :test] do
   puts "All good."
 end
