@@ -1,7 +1,7 @@
 require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
 require_relative '../lib/midb'
 
-CodeClimate::TestReporter.start
 
 RSpec.configure do |config|
   # Use color in STDOUT and files
