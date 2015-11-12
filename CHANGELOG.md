@@ -2,9 +2,17 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [NEW BRANCH oop]
 ### Changed
-- Some style changes in hashes.
+- Changed `dbengine_model.rb`, `errors_view.rb`, `security_controller.rb`, `server_view.rb` and half of `server_controller.rb` to be independent from each other, using a more OOP approach. This will enable developers to customize an API by inheriting from the base MIDB::API classes.
+- Added new module structure: `MIDB::API::Controller`, `MIDB::API::Dbengine`, `MIDB::Interface::Server` and MIDB::Interface::Errors`.
+
+## [Unreleased]
+### Added
+- RSpec tests for the server model.
+- Test running at Travis and coverage analysis thru CodeClimate.
+### Changed
+- Some style changes in hashes. 
 
 ## [1.0.5] - 2015-11-07
 ### Added
@@ -31,6 +39,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Cleaned up old gem files.
 
 
+[NEW BRANCH oop]: https://github.com/unrar/midb/tree/oop
 [Unreleased]: https://github.com/unrar/midb/compare/v1.0.4...HEAD
 [1.0.4]: https://github.com/unrar/midb/compare/v1.0.0...v1.0.4
 [1.0.5]: https://github.com/unrar/midb/compare/v1.0.4...v1.0.5
