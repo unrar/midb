@@ -125,19 +125,19 @@ module MIDB
                 @config["dbengine"] = :sqlite3
               end
             end
-            MIDB::Interface::Server.out_config(:dbengine)
+            MIDB::Interface::Server.out_config(:dbengine, @config)
           when "host"
             @config["dbhost"] = setter if set
-            MIDB::Interface::Server.out_config(:dbhost)
+            MIDB::Interface::Server.out_config(:dbhost, @config)
           when "port"
             @config["dbport"] = setter if set
-            MIDB::Interface::Server.out_config(:dbport)
+            MIDB::Interface::Server.out_config(:dbport, @config)
           when "user"
             @config["dbuser"] = setter if set
-            MIDB::Interface::Server.out_config(:dbuser)
+            MIDB::Interface::Server.out_config(:dbuser, @config)
           when "password"
             @config["dbpassword"] = setter if set
-            MIDB::Interface::Server.out_config(:dbpassword)
+            MIDB::Interface::Server.out_config(:dbpassword, @config)
           else
             MIDB::Interface::Errors.die(:synax)
           end
@@ -145,7 +145,7 @@ module MIDB
           case subcmd
           when "key"
             @config["apikey"] = setter if set
-            MIDB::Interface::Server.out_config(:apikey)
+            MIDB::Interface::Server.out_config(:apikey, @config)
           end
         else
           MIDB::Interface::Errors.die(:syntax)
@@ -173,32 +173,33 @@ module MIDB
         end
 
         # Call the server engine
-        if MIDB::ServerEngineController.start(@port)
+        eng = MIDB::API::Engine.new(@db, @http_status, @config)
+        if eng.start(@port)
           @config["status"] = :running
-          MIDB::ServerView.success()
+          MIDB::Interface::Server.success()
         else
-          MIDB::ErrorsView.die(:server_error)
+          MIDB::Interface::Errors.die(:server_error)
         end
       end
 
       # $ midb serve
       #
       # Serve a JSON file
-      def self.do_serve()
+      def do_serve()
         # Check if there's a second argument
-        MIDB::ErrorsView.die(:syntax) if @args.length < 2
+        MIDB::Interface::Errors.die(:syntax) if @args.length < 2
         # Is the server running? It shouldn't
-        MIDB::ErrorsView.die(:server_already_started) if @config["status"] == :running
+        MIDB::Interface::Errors.die(:server_already_started) if @config["status"] == :running
         # Is there such file as @args[1]?
-        MIDB::ErrorsView.die(:file_404) unless File.file?("./json/" + @args[1])
+        MIDB::Interface::Errors.die(:file_404) unless File.file?("./json/" + @args[1])
         # Is the file a JSON file?
-        MIDB::ErrorsView.die(:not_json) unless File.extname(@args[1]) == ".json"
+        MMIDB::Interface::Errors.die(:not_json) unless File.extname(@args[1]) == ".json"
         # Is the file already loaded?
-        MIDB::ErrorsView.die(:json_exists) if @config["serves"].include? @args[1]
+        MIDB::Interface::Errors.die(:json_exists) if @config["serves"].include? @args[1]
 
         # Tests passed, so let's add the file to the served list!
         @config["serves"].push @args[1]
-        MIDB::ServerView.show_serving()
+        MIDB::Interface::Server.show_serving(@config)
       end
 
       # $ midb unserve
@@ -206,26 +207,26 @@ module MIDB
       # Stop serving a JSON file
       def self.do_unserve()
         # Check if there's a second argument
-        MIDB::ErrorsView.die(:syntax) if @args.length < 2
+        MIDB::Interface::Errors.die(:syntax) if @args.length < 2
         # Is the server running? It shouldn't
-        MIDB::ErrorsView.die(:server_already_started) if @config["status"] == :running
+        MIDB::Interface::Errors.die(:server_already_started) if @config["status"] == :running
         # Is the file already loaded?
-        MIDB::ErrorsView.die(:json_not_exists) unless @config["serves"].include? @args[1]
+        MIDB::Interface::Errors.die(:json_not_exists) unless @config["serves"].include? @args[1]
 
         # Delete it!
         @config["serves"].delete @args[1]
-        MIDB::ServerView.show_serving()
+        MIDB::Interface::Server.show_serving(@config)
       end
 
       # $ midb stop
       #
       # Stop the server in case it's running in the background.
-      def self.do_stop()
+      def do_stop()
         # Is the server running?
-        MIDB::ErrorsView.die(:server_not_running) unless @config["status"] == :running
+        MIDB::Interface::Errors.die(:server_not_running) unless @config["status"] == :running
 
         @config["status"] = :asleep
-        MIDB::ServerView.server_stopped()
+        MIDB::Interface::Server.server_stopped()
       end
 
 
@@ -233,16 +234,16 @@ module MIDB
       # $ midb
       #
       # Decide the behavior of the server in function of the arguments.
-      def self.init()
+      def init()
         # We should have at least one argument, which can be `run` or `serve`
-        MIDB::ErrorsView.die(:noargs) if @args.length < 1
+        MIDB::Interface::Errors.die(:noargs) if @args.length < 1
 
         # Load the config
         if File.file?(".midb.yaml")
           @config = YAML.load_file(".midb.yaml")
         else
           # If the file doesn't exist, we need to bootstrap
-          MIDB::ErrorsView.die(:bootstrap) if @args[0] != "help" && args[0] != "bootstrap"
+          MIDB::Interface::Errors.die(:bootstrap) if @args[0] != "help" && args[0] != "bootstrap"
         end
 
         case @args[0]
@@ -283,7 +284,7 @@ module MIDB
 
       # Method: save
       # Saves config to .midb.yaml
-      def self.save()
+      def save()
         File.open(".midb.yaml", 'w') do |l|
           l.write @config.to_yaml
         end

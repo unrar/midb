@@ -14,7 +14,7 @@ module MIDB
       # @deprecated It's no longer used but kept for historical reasons.
       # @param header [String] A line of an HTTP header.
       # @return [Boolean] Whether it's an auth header or not.
-      def is_auth?(header)
+      def self.is_auth?(header)
          return header.split(":")[0].downcase == "authentication"
       end
 
@@ -23,7 +23,7 @@ module MIDB
       # @param header [String] A line of an HTTP header (should have been checked
       #                         to be an auth header)
       # @return [String] The HMAC digest as a string.
-      def parse_auth(header)
+      def self.parse_auth(header)
         return header.split(" ")[1]
       end
 
@@ -34,7 +34,7 @@ module MIDB
       # @param key [String] The private API key.
       #
       # @return [Boolean] Whether the given digest matches the correct one or not.
-      def check?(header, params, key)
+      def self.check?(header, params, key)
         hmac = HMAC::SHA1.new(key)
         hmac.update(params)
         return self.parse_auth(header) == CGI.escape(Base64.encode64("#{hmac.digest}"))
