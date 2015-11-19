@@ -139,7 +139,7 @@ module MIDB
             @config["dbpassword"] = setter if set
             MIDB::Interface::Server.out_config(:dbpassword, @config)
           else
-            MIDB::Interface::Errors.die(:synax)
+            MIDB::Interface::Errors.die(:syntax)
           end
         when "api"
           case subcmd
