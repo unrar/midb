@@ -1,6 +1,7 @@
 require 'midb/server_controller'
 require 'midb/dbengine_model'
 require 'midb/server_view'
+require 'midb/hooks'
 
 require 'sqlite3'
 require 'json'
@@ -300,6 +301,7 @@ module MIDB
             jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
           end
         end
+        MIDB::API::Hooks.after_get_all_entries()
         return jso
       end
     end

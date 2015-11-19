@@ -1,0 +1,8 @@
+{
+"id":
+{
+"name": "users/uname",
+"age": "users/uage",
+"password": "passwords/password/uid->id"
+}
+}
