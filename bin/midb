@@ -4,11 +4,14 @@
 # 08/31/15, unrar
 require 'midb'
 
+api = MIDB::API::Controller.new(ARGV)
+api.init()
+api.save()
 # Pass the arguments to the controler, we don't want the action here ;-)
-MIDB::ServerController.args = ARGV
+#MIDB::ServerController.args = ARGV
 
 # And start the server
-MIDB::ServerController.init()
+#MIDB::ServerController.init()
 
 # Save data in case we didn't actually start the server but change the configuration
-MIDB::ServerController.save()
+#!!MIDB::ServerController.save()
