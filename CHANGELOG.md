@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - New file (`hooks.rb`) that will contain the default content for the hooks (not really implemented yet).
 - RSpec tests for the server model.
 - Test running at Travis and coverage analysis thru CodeClimate.
+
 ### Changed
 - Changed `dbengine_model.rb`, `errors_view.rb`, `security_controller.rb`, `server_view.rb`, `server_controller.rb` and `serverengine_controller.rb` to be independent from each other, using a more OOP approach. This will enable developers to customize an API by inheriting from the base MIDB::API classes.
 - Some style changes in hashes. 
