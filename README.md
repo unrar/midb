@@ -1,4 +1,4 @@
-# midb v1.0.5 :no_good: 
+# midb v1.1.0 :no_good: 
 
 [![Gem Version](https://badge.fury.io/rb/midb.svg)](http://badge.fury.io/rb/midb) [![Build Status](https://travis-ci.org/unrar/midb.svg)](https://travis-ci.org/unrar/midb) [![Inline docs](http://inch-ci.org/github/unrar/midb.svg?branch=gem&style=shields)](http://inch-ci.org/github/unrar/midb) [![Code Climate](https://codeclimate.com/github/unrar/midb/badges/gpa.svg)](https://codeclimate.com/github/unrar/midb) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/unrar/midb/badges/quality-score.png?b=gem)](https://scrutinizer-ci.com/g/unrar/midb/?branch=gem) [![Test Coverage](https://codeclimate.com/github/unrar/midb/badges/coverage.svg)](https://codeclimate.com/github/unrar/midb/coverage)
 
@@ -118,5 +118,28 @@ res = c.post("http://localhost:8081/test/", body=body, header=header)
 
 This is of course an example - HMAC HTTP authentication is widely used, but I've only tested this method in the example as I'm 100% it'll work because the server does the same (that's the point of HMAC authentication).
 
-## I need more help!
-I'm building the wiki! Soon, you'll have a whole guide for you. :flushed:
+## For the devs!
+If you want to run an API you most likely are a developer of some sort - and if you're using this ruby solution to your API
+madness, you most likely know some ruby. As of v1.1.0, creating your custom own API is getting easier! While hooks are not 
+yet fully implemented (see the `addin.rb` and `hooked.rb` files), you can create an API using the MIDB::API module. 
+
+Here's how:
+
+```ruby
+require 'midb'
+
+# If you want to bypass the controller (which is used by the binary), you need to do this
+
+# First, create a config hash
+cc = Hash.new
+# We're using SQLite3, so we only need to specify the engine and endpoints
+cc["dbengine"] = :sqlite3
+cc["serves"] = ["users.json"] # file in ./json/
+# Init the engine, given db='test' and starting HTTP status=420 WAIT
+engine = MIDB::API::Engine.new("test", "420 WAIT", cc)
+engine.start()
+```
+
+If you load a file that overrides hooks as well, you can have your custom MIDB API! 
+
+Don't be hard on us for this not being *much* useful yet; it's officially coming on v2.0.0!
