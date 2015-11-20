@@ -1,18 +1,9 @@
 require 'midb'
-
-module MIDB
-  module API
-    class Hooks
-      def self.after_get_all_entries()
-        puts "AYY IM HOOKED"
-      end
-    end
-   end
-end
-
 require_relative ("./addin")
+
+# Create the configuration for my API
 cc = Hash.new
 cc["dbengine"] = :sqlite3
+# New engine binding to the "test" database
 engy = MIDB::API::Engine.new("test", "100 WAITING", cc)
-dbop = MIDB::API::Model.new("users", "test", engy)
-dbop.get_all_entries()
+engy.start
