@@ -74,7 +74,7 @@ module MIDB
       def self.help(what)
         case what
         when :list
-          puts "midb has several commands that you can use. For detailed information, see `midb help command`."
+          puts "midb v1.1.1 has several commands that you can use. For detailed information, see `midb help command`."
           puts " "
           puts "bootstrap\tCreate the basic files and directories that midb needs to be ran in a folder."
           puts "set\tModify this project's settings. See the detailed help for a list of options."

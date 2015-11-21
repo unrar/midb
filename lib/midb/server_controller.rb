@@ -3,6 +3,7 @@ require 'midb/server_view'
 require 'midb/errors_view'
 require 'midb/security_controller'
 require 'midb/serverengine_controller'
+require 'midb/hooks'
 
 require 'yaml'
 require 'socket'
@@ -26,12 +27,14 @@ module MIDB
       #   @return [String] HTTP status code and string representation for the header
       # @!attribute port
       #   @return [Fixnum] Port where the server will listen.
-      attr_accessor :args, :config, :db, :http_status, :port
+      # @!attribute h
+      #   @return [Object] MIDB::API::Hooks instance
+      attr_accessor :args, :config, :db, :http_status, :port, :hooks
 
       # Constructor for this controller.
       #
       # @param args [Array<String>] Arguments passed to the binary.
-      def initialize(args)
+      def initialize(args, hooks=nil)
         # Default values
         #
         # @see #http_status
@@ -42,6 +45,12 @@ module MIDB
         @args = args
         @config = Hash.new()
         @port = 8081
+        if hooks == nil
+          # At some point someone should register this.
+          @hooks = MIDB::API::Hooks.new
+        else
+          @hooks = hooks
+        end
       end
 
       #####################
@@ -172,8 +181,8 @@ module MIDB
           end
         end
 
-        # Call the server engine
-        eng = MIDB::API::Engine.new(@db, @http_status, @config)
+        # Call the server engine and supply the (non)existing hooks
+        eng = MIDB::API::Engine.new(@db, @http_status, @config, @hooks)
         if eng.start(@port)
           @config["status"] = :running
           MIDB::Interface::Server.success()

@@ -3,6 +3,7 @@ require 'midb/server_model'
 require 'midb/server_view'
 require 'midb/errors_view'
 require 'midb/security_controller'
+require 'midb/hooks'
 
 require 'yaml'
 require 'socket'
@@ -22,17 +23,25 @@ module MIDB
       #   @return [String] Database name (if SQLite is the engine, file name without extension)
       # @!attribute http_status
       #   @return [String] HTTP status code and string representation for the header
-      attr_accessor :config, :db, :http_status
+      # @!attribute h
+      #   @return [Object] MIDB::API::Hooks instance
+      attr_accessor :config, :db, :http_status, :hooks
+
 
       # Constructor
       #
       # @param db   [String] Database to which the server will bind.
       # @param stat [Fixnum] HTTP Status
       # @param cnf  [Hash] Config from the server controller.
-      def initialize(db, stat, cnf)
+      def initialize(db, stat, cnf, hooks=nil)
         @config = cnf
         @db = db
         @http_status = stat
+        if hooks == nil
+          @hooks = MIDB::API::Hooks.new
+        else
+          @hooks = hooks
+        end
       end
 
       # Starts the server on a given port (default: 8081)

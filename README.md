@@ -1,4 +1,4 @@
-# midb v1.1.0 :no_good: 
+# midb v1.1.1 :no_good: 
 
 [![Gem Version](https://badge.fury.io/rb/midb.svg)](http://badge.fury.io/rb/midb) [![Build Status](https://travis-ci.org/unrar/midb.svg)](https://travis-ci.org/unrar/midb) [![Inline docs](http://inch-ci.org/github/unrar/midb.svg?branch=gem&style=shields)](http://inch-ci.org/github/unrar/midb) [![Code Climate](https://codeclimate.com/github/unrar/midb/badges/gpa.svg)](https://codeclimate.com/github/unrar/midb) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/unrar/midb/badges/quality-score.png?b=gem)](https://scrutinizer-ci.com/g/unrar/midb/?branch=gem) [![Test Coverage](https://codeclimate.com/github/unrar/midb/badges/coverage.svg)](https://codeclimate.com/github/unrar/midb/coverage)
 
@@ -143,3 +143,14 @@ engine.start()
 If you load a file that overrides hooks as well, you can have your custom MIDB API! 
 
 Don't be hard on us for this not being *much* useful yet; it's officially coming on v2.0.0!
+
+### Hooks so far
+As of v1.1.1, there are two hooks available: 
+
+* `after_get_all_entries`, ran after the `get_all_entries` method in the server model.
+* `format_field`, ran when returning the JSON response to a GET request.
+
+Sadly there's no more information about hooks at the moment; to understand how they work, checkout
+the `hooked.rb` and `addin.rb` files. When v2.0.0 is released we'll add a wiki page on hooks.
+
+The hooks implementation is [its-hookable](https://github.com/unrar/its-hookable)'s.

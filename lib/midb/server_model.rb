@@ -10,17 +10,20 @@ module MIDB
   module API
     class Model
 
-      attr_accessor :jsf, :db, :engine
+      attr_accessor :jsf, :db, :engine, :hooks
 
       # Constructor
       #
       # @param jsf [String] JSON file with the schema
       # @param db [String] Database to operate on.
       # @param engine [Object] Reference to the API engine.
+      #
+      # @notice that @hooks (the hooks) are taken from the engine.
       def initialize(jsf, db, engine)
         @jsf = jsf
         @db = db
         @engine = engine
+        @hooks = engine.hooks
       end
 
       # Safely get the structure
@@ -261,6 +264,7 @@ module MIDB
                 query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
               end
               jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
+              jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
             end
           end
           @engine.http_status = "200 OK"
@@ -299,9 +303,10 @@ module MIDB
               query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
             end
             jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
+            jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
           end
         end
-        MIDB::API::Hooks.after_get_all_entries()
+        @hooks.after_get_all_entries(rows.length)
         return jso
       end
     end

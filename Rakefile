@@ -5,7 +5,7 @@ task :build_gem do
 end
 
 task :install_gem do
-  sh "gem install midb-1.1.0.gem"
+  sh "gem install midb-1.1.1.gem"
 end
 
 task :test do
