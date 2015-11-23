@@ -27,6 +27,12 @@ module MIDB
       #   @return [Object] MIDB::API::Hooks instance
       attr_accessor :config, :db, :http_status, :hooks
 
+      # Handle an unauthorized request
+      def unauth_request
+        @http_status = "401 Unauthorized"
+        MIDB::Interface::Server.info(:no_auth)
+        MIDB::Interface::Server.json_error(401, "Unauthorized").to_json
+      end
 
       # Constructor
       #
@@ -72,7 +78,7 @@ module MIDB
 
           # Endpoint syntax: ["", FILE, ID, (ACTION)]
           endpoint = request[1].split("/")
-          ep_file = endpoint[1]
+          ep_file = endpoint[1].split("?")[0]
 
           method = request[0]
           endpoints = [] # Valid endpoints
@@ -92,29 +98,46 @@ module MIDB
               # Create the model
               dbop = MIDB::API::Model.new(ep, @db, self)
               # Analyze the request and pass it to the model
-              if method == "GET"
-                case endpoint.length
-                when 2
-                  # No ID has been specified. Return all the entries
-                  # Pass it to the model and get the JSON
-                  response_json = dbop.get_all_entries().to_json
-                when 3
-                  # An ID has been specified. Should it exist, return all of its entries.
-                  response_json = dbop.get_entries(endpoint[2]).to_json
-                end
+              # Is the method accepted?
+              accepted_methods = ["GET", "POST", "PUT", "DELETE"]
+              unless accepted_methods.include? method
+                @http_status = "405 Method Not Allowed"
+                response_json = MIDB::Interface::Server.json_error(405, "Method Not Allowed").to_json
               else
-                # An action has been specified. We're going to need HTTP authentification here.
-                MIDB::Interface::Server.info(:auth_required)
-
-                if (not headers.has_key? "Authentication") ||
-                   (not MIDB::API::Security.check?(headers["Authentication"], data, @config["apikey"]))
-                  @http_status = "401 Unauthorized"
-                  response_json = MIDB::Interface::Server.json_error(401, "Unauthorized").to_json
-                  MIDB::Interface::Server.info(:no_auth)
-
+                # Do we need authentication?
+                auth_req = false
+                unauthenticated = false
+                if @config["privacy#{method.downcase}"] == true
+                  MIDB::Interface::Server.info(:auth_required)
+                  auth_req = true
+                  # If it's a GET request and we have a different key for GET methods...
+                  if method == "GET"
+                    data = ep_file
+                  end
+                  if (@config["apigetkey"] != nil) && (method == "GET")
+                    unauthenticated = (not headers.has_key? "Authentication") ||
+                     (not MIDB::API::Security.check?(headers["Authentication"], data, @config["apigetkey"]))
+                  else
+                    unauthenticated = (not headers.has_key? "Authentication") ||
+                       (not MIDB::API::Security.check?(headers["Authentication"], data, @config["apikey"]))
+                  end
+                end
+                # Proceed to handle the request
+                if unauthenticated
+                  response_json = self.unauth_request
                 else
-                  MIDB::Interface::Server.info(:auth_success)
-                  if method == "POST"
+                  MIDB::Interface::Server.info(:auth_success) if (not unauthenticated) && auth_req
+                  if method == "GET"
+                    case endpoint.length
+                    when 2
+                      # No ID has been specified. Return all the entries
+                      # Pass it to the model and get the JSON
+                      response_json = dbop.get_all_entries().to_json
+                    when 3
+                      # An ID has been specified. Should it exist, return all of its entries.
+                      response_json = dbop.get_entries(endpoint[2]).to_json
+                    end
+                  elsif method == "POST"
                     response_json = dbop.post(data).to_json
                   else
                     if endpoint.length >= 3
@@ -129,7 +152,7 @@ module MIDB
                     end
                   end
                 end
-              end
+              end 
               MIDB::Interface::Server.info(:response, response_json)
               # Return the results via HTTP
               socket.print "HTTP/1.1 #{@http_status}\r\n" +

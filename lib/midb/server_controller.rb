@@ -31,6 +31,19 @@ module MIDB
       #   @return [Object] MIDB::API::Hooks instance
       attr_accessor :args, :config, :db, :http_status, :port, :hooks
 
+      # Convert an on/off string to a boolean
+      #
+      # @param text [String] Text to convert to bool
+      def to_bool(text) 
+        if text == "on" || text == "true" || text == "yes"
+          return true
+        elsif text == "off" || text == "false" || text == "no"
+          return false
+        else
+          return nil
+        end
+      end
+
       # Constructor for this controller.
       #
       # @param args [Array<String>] Arguments passed to the binary.
@@ -92,12 +105,20 @@ module MIDB
           @config["serves"] = []
           @config["status"] = :asleep    # The server is initially asleep
           @config["apikey"] = "midb-api" # This should be changed, it's the private API key
+          # Optional API key for GET methods (void by default)
+          @config["apigetkey"] = nil
           @config["dbengine"] = :sqlite3  # SQLite is the default engine
           # Default DB configuration for MySQL and other engines
           @config["dbhost"] = "localhost"
           @config["dbport"] = 3306
           @config["dbuser"] = "nobody"
           @config["dbpassword"] = "openaccess" 
+          # New settings - privacy
+          @config["privacyget"] = false
+          @config["privacypost"] = true
+          @config["privacyput"] = true
+          @config["privacydelete"] = true
+
           File.open(".midb.yaml", 'w') do |l|
             l.write @config.to_yaml
           end
@@ -155,6 +176,30 @@ module MIDB
           when "key"
             @config["apikey"] = setter if set
             MIDB::Interface::Server.out_config(:apikey, @config)
+          when "getkey"
+            if setter == "nil"
+              @config["apigetkey"] = nil if set
+            else
+              @config["apigetkey"] = setter if set
+            end
+            MIDB::Interface::Server.out_config(:apigetkey, @config)
+          end
+        when "privacy"
+          case subcmd
+          when "get"
+            @config["privacyget"] = self.to_bool(setter) if set
+            MIDB::Interface::Server.out_config(:privacyget, @config)
+          when "post"
+            @config["privacypost"] = self.to_bool(setter) if set
+            MIDB::Interface::Server.out_config(:privacypost, @config)
+          when "put"
+            @config["privacyput"] = self.to_bool(setter) if set
+            MIDB::Interface::Server.out_config(:privacyput, @config)
+          when "delete"
+            @config["privacydelete"] = self.to_bool(setter) if set
+            MIDB::Interface::Server.out_config(:privacydelete, @config)
+          else 
+            MIDB::Interface::Errors.die(:syntax)
           end
         else
           MIDB::Interface::Errors.die(:syntax)

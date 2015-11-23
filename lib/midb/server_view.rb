@@ -56,16 +56,11 @@ module MIDB
       # @param what [Symbol] What to show the config for.
       # @param cnf [Array<String>] The array for the config.
       def self.out_config(what, cnf)
-        msg = case what
-              when :dbengine then "Database engine: #{cnf['dbengine']}."
-              when :dbhost then "Database server host: #{cnf['dbhost']}."
-              when :dbport then "Database server port: #{cnf['dbport']}."
-              when :dbuser then "Database server user: #{cnf['dbuser']}."
-              when :dbpassword then "Database server password: #{cnf['dbpassword']}."
-              when :apikey then "Private API key: #{cnf['apikey']}"
-              else "Error??"
-              end
-        puts msg
+        if cnf.has_key? what.to_s
+          puts "#{what.to_s} set to #{cnf[what.to_s]}"
+        else
+          puts "Unknown setting."
+        end
       end
 
       # Shows the help

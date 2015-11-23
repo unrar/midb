@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+### Added
+- New hooks.
+- New boolean options `privacy:get`, `privacy:post`, `privacy:put` and `privacy:delete` to specify whether authentication
+is needed for these methods. Default: `false`, `true`, `true`, `true`.
+- New option `api:getkey` which allows you to set a different key to use in GET requests, if `privacy:get`. Default = `nil`.
+To disable this, set it back to nil: `$ midb set api:getkey nil`.
+### Changed
+- More compacted code in the server engine. Some complicated logics were moved to methods.
+- `MIDB::Interface::Server.out_config` made more dynamic and compact.
+- Fixed the server engine to ignore everything after the `?` on endpoints to support GET authentication.
+- On GET requests, the HMAC **has** to be a digest of the endpoint. For example, if you send a GET request to `/api/users/1` then you have to make a HMAC digest of `users` with the api key. See `client.rb` for an example. Will be explaiend on the wiki when v2 is released.
+
 ## [1.1.0] - 2015-11-20
 ### Added
 - New branch ([oop branch]) where this new features are being developed.
