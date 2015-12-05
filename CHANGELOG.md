@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 is needed for these methods. Default: `false`, `true`, `true`, `true`.
 - New option `api:getkey` which allows you to set a different key to use in GET requests, if `privacy:get`. Default = `nil`.
 To disable this, set it back to nil: `$ midb set api:getkey nil`.
+- Exception handling to database operations - after testing, there's no way a request can break or stop the server. The only reason an exception will be risen is due to malformation in JSON files.
+
 ### Changed
 - More compacted code in the server engine. Some complicated logics were moved to methods.
 - `MIDB::Interface::Server.out_config` made more dynamic and compact.

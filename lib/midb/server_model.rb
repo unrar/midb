@@ -247,6 +247,9 @@ module MIDB
         dbe = MIDB::API::Dbengine.new(@engine.config, @db)
         dblink = dbe.connect()
         rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]} WHERE id=#{id};")
+        if rows == false
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
         if dbe.length(rows) > 0
           rows.each do |row|
             jso[row["id"]] = self.get_structure
@@ -262,6 +265,9 @@ module MIDB
                 query = dbe.query(dblink, "SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
               else
                 query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
+              end
+              if query == false
+                return MIDB::Interface::Server.json_error(400, "Bad Request")
               end
               jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
               jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
@@ -284,7 +290,9 @@ module MIDB
         dbe = MIDB::API::Dbengine.new(@engine.config, @db)
         dblink = dbe.connect()
         rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]};")
-
+        if rows == false
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
         # Iterate over all rows of this table
         rows.each do |row|
           # Replace the "id" in the given JSON with the actual ID and expand it with the fields
@@ -302,11 +310,14 @@ module MIDB
             else
               query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
             end
+            if query == false
+              return MIDB::Interface::Server.json_error(400, "Bad Request")
+            end
             jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
             jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
           end
         end
-        @hooks.after_get_all_entries(rows.length)
+        @hooks.after_get_all_entries(dbe.length(rows))
         return jso
       end
     end

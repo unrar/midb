@@ -1,6 +1,6 @@
 require 'sqlite3'
 require 'mysql2'
-
+require 'midb/errors_view'
 module MIDB
   module API
     # @author unrar
@@ -38,14 +38,19 @@ module MIDB
       #
       # @return [SQLite3::Database, Mysql2::Client] A resource referencing to the database
       def connect()
-        # Connect to an SQLite3 database
-        if @engine == :sqlite3
-          sq = SQLite3::Database.open("./db/#{@db}.db")
-          sq.results_as_hash = true
-          return sq
-        # Connect to a MySQL database
-        elsif @engine == :mysql
-          return Mysql2::Client.new(:host => @host, :username => @uname, :password => @pwd, :database => @db)
+        begin
+          # Connect to an SQLite3 database
+          if @engine == :sqlite3
+            sq = SQLite3::Database.open("./db/#{@db}.db")
+            sq.results_as_hash = true
+            return sq
+          # Connect to a MySQL database
+          elsif @engine == :mysql
+            return Mysql2::Client.new(:host => @host, :username => @uname, :password => @pwd, :database => @db)
+          end
+        rescue
+          MIDB::Interface::Errors.exception(:database_error)
+          return false
         end
       end
 
@@ -56,10 +61,15 @@ module MIDB
       #
       # @return [Array, Hash] Returns an array of hashes for SQLite3 or a hash for MySQL
       def query(res, query)
-        if @engine == :sqlite3
-          return res.execute(query)
-        elsif @engine == :mysql
-          return res.query(query)
+        begin
+          if @engine == :sqlite3
+            return res.execute(query)
+          elsif @engine == :mysql
+            return res.query(query)
+          end
+        rescue
+          MIDB::Interface::Errors.exception(:query_error)
+          return false
         end
       end
 

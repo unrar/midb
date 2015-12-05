@@ -25,6 +25,14 @@ module MIDB
         end
         abort("Fatal error: #{errmsg}")
       end
+      def self.exception(exc)
+        excmsg = case exc
+          when :database_error then "An error occurred when trying to connect to the database."
+          when :query_error then "An error occurred when trying to query the database."
+          else "Unknown exception: #{exc.to_s}"
+        end
+        puts "(exception)\t#{excmsg}"
+      end
     end
   end
 end

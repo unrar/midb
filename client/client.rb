@@ -9,7 +9,7 @@ require 'uri'
 require 'json'
 
 def create_header(body)
-  key = "example"
+  key = "gettin"
   #signature = URI.encode_www_form(body)
   signature = body
   hmac = HMAC::SHA1.new(key)
