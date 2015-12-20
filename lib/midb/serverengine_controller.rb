@@ -78,7 +78,11 @@ module MIDB
 
           # Endpoint syntax: ["", FILE, ID, (ACTION)]
           endpoint = request[1].split("/")
-          ep_file = endpoint[1].split("?")[0]
+          if endpoint.length >= 2
+            ep_file = endpoint[1].split("?")[0]
+          else
+            ep_file = ""
+          end
 
           method = request[0]
           endpoints = [] # Valid endpoints
