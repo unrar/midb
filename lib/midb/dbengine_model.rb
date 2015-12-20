@@ -49,7 +49,7 @@ module MIDB
             return Mysql2::Client.new(:host => @host, :username => @uname, :password => @pwd, :database => @db)
           end
         rescue
-          MIDB::Interface::Errors.exception(:database_error)
+          MIDB::Interface::Errors.exception(:database_error, $!)
           return false
         end
       end
@@ -68,7 +68,7 @@ module MIDB
             return res.query(query)
           end
         rescue
-          MIDB::Interface::Errors.exception(:query_error)
+          MIDB::Interface::Errors.exception(:query_error, $!)
           return false
         end
       end

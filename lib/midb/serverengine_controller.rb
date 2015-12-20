@@ -132,18 +132,36 @@ module MIDB
                     when 2
                       # No ID has been specified. Return all the entries
                       # Pass it to the model and get the JSON
+                      MIDB::Interface::Server.info(:fetch, "get_all_entries()")
                       response_json = dbop.get_all_entries().to_json
                     when 3
-                      # An ID has been specified. Should it exist, return all of its entries.
-                      response_json = dbop.get_entries(endpoint[2]).to_json
+                      # This regular expression checks if it contains an integer
+                      if /\A[-+]?\d+\z/ === endpoint[2]
+                        # An ID has been specified. Should it exist, return all of its entries.
+                        MIDB::Interface::Server.info(:fetch, "get_entries(#{endpoint[2]})")
+                        response_json = dbop.get_entries(endpoint[2].to_i).to_json
+                      else
+                        # A row has been specified, but no pattern
+                        MIDB::Interface::Server.info(:fetch, "get_column_entries(#{endpoint[2]})")
+                        response_json = dbop.get_column_entries(endpoint[2]).to_json
+                      end
+                    when 4
+                      if (endpoint[2].is_a? String) && (endpoint[3].is_a? String) then
+                        # A row and a pattern have been specified
+                        MIDB::Interface::Server.info(:fetch, "get_matching_rows(#{endpoint[2]}, #{endpoint[3]})")
+                        response_json = dbop.get_matching_rows(endpoint[2], endpoint[3]).to_json
+                      end
                     end
                   elsif method == "POST"
+                    MIDB::Interface::Server.info(:fetch, "post(#{data})")
                     response_json = dbop.post(data).to_json
                   else
                     if endpoint.length >= 3
                       if method == "DELETE"
+                        MIDB::Interface::Server.info(:fetch, "delete(#{endpoint[2]})")
                         response_json = dbop.delete(endpoint[2]).to_json 
                       elsif method == "PUT"
+                        MIDB::Interface::Server.info(:fetch, "put(#{endpoint[2]}, data)")
                         response_json = dbop.put(endpoint[2], data).to_json
                       end
                     else

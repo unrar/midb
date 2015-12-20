@@ -47,6 +47,7 @@ module MIDB
               when :no_auth then ">> No authentication header - sending a 401 error."
               when :auth_success then ">> Successfully authenticated the request."
               when :bootstrap then "> Successfully bootstraped!"
+              when :fetch then ">> Fetching response... [#{info}]"
               end
         puts msg
       end

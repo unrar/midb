@@ -253,7 +253,6 @@ module MIDB
         if dbe.length(rows) > 0
           rows.each do |row|
             jso[row["id"]] = self.get_structure
-
             self.get_structure.each do |name, dbi|
               table = dbi.split("/")[0]
               field = dbi.split("/")[1]
@@ -295,7 +294,119 @@ module MIDB
         end
         # Iterate over all rows of this table
         rows.each do |row|
-          # Replace the "id" in the given JSON with the actual ID and expand it with the fields
+          jso[row["id"]] = self.get_structure
+          self.get_structure.each do |name, dbi|
+            table = dbi.split("/")[0]
+            field = dbi.split("/")[1]
+            # Must-match relations ("table2/field/table2-field->row-field")
+            if dbi.split("/").length > 2
+              match = dbi.split("/")[2]
+              matching_field = match.split("->")[0]
+              row_field = match.split("->")[1]
+              query = dbe.query(dblink, "SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
+            else
+              query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
+            end
+            if query == false
+              return MIDB::Interface::Server.json_error(400, "Bad Request")
+            end
+            jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
+            jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
+          end
+        end
+        @hooks.after_get_all_entries(dbe.length(rows))
+        return jso
+      end
+
+
+      # Get all the entries from the database belonging to a column
+      def get_column_entries(column)
+        jso = Hash.new() 
+        jss = self.get_structure()
+        db_column = nil
+        # Is the column recognized?
+        if jss.has_key? column then
+          db_column = jss[column].split("/")[1]
+        else
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
+  
+        # Connect to database
+        dbe = MIDB::API::Dbengine.new(@engine.config, @db)
+        dblink = dbe.connect()
+        rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]};")
+        if rows == false
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
+        # Iterate over all rows of this table
+        rows.each do |row|
+
+          name = column
+          dbi = jss[name]
+          table = dbi.split("/")[0]
+          field = dbi.split("/")[1]
+          # Must-match relations ("table2/field/table2-field->row-field")
+          if dbi.split("/").length > 2
+            match = dbi.split("/")[2]
+            matching_field = match.split("->")[0]
+            row_field = match.split("->")[1]
+            query = dbe.query(dblink, "SELECT #{field} FROM #{table} WHERE #{matching_field}=#{row[row_field]};")
+          else
+            query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
+          end
+          if query == false
+            return MIDB::Interface::Server.json_error(400, "Bad Request")
+          end
+          jso[row["id"]] = {}
+          jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
+          jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
+        end
+        @hooks.after_get_all_entries(dbe.length(rows))
+        return jso
+      end
+
+      # Get all the entries from the database belonging to a column matching a pattern
+      def get_matching_rows(column, pattern)
+        jso = Hash.new() 
+        jss = self.get_structure()
+        db_column = nil
+        # Is the column recognized?
+        if jss.has_key? column then
+          db_column = jss[column].split("/")[1]
+        else
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
+  
+        # Connect to database
+        dbe = MIDB::API::Dbengine.new(@engine.config, @db)
+        dblink = dbe.connect()
+        rows = dbe.query(dblink, "SELECT * FROM #{self.get_structure.values[0].split('/')[0]};")
+        if rows == false
+          return MIDB::Interface::Server.json_error(400, "Bad Request")
+        end
+        # Iterate over all rows of this table
+        rows.each do |row|
+          # Does this row match?
+          bufd = jss[column]
+          b_table = bufd.split("/")[0]
+          b_field = bufd.split("/")[1]
+          # The column is in another table, let's find it
+          if bufd.split("/").length > 2    
+            b_match = bufd.split("/")[2]
+            b_m_field = b_match.split("->")[0]
+            b_r_field = b_match.split("->")[1]
+
+            bquery = dbe.query(dblink, "SELECT #{b_field} FROM #{b_table} WHERE (#{b_m_field}=#{row[b_r_field]} AND #{db_column} LIKE '%#{pattern}%');")
+          else
+            # It's in the same main table, let's see if it matches
+            bquery = dbe.query(dblink, "SELECT #{b_field} FROM #{b_table} WHERE (id=#{row['id']} AND #{db_column} LIKE '%#{pattern}%');")
+          end
+
+          # Unless the query has been successful (thus this row matches), skip to the next row
+          unless dbe.length(bquery) > 0
+            next
+          end
+
           jso[row["id"]] = self.get_structure
 
           self.get_structure.each do |name, dbi|
@@ -311,7 +422,7 @@ module MIDB
               query = dbe.query(dblink, "SELECT #{field} from #{table} WHERE id=#{row['id']};")
             end
             if query == false
-              return MIDB::Interface::Server.json_error(400, "Bad Request")
+              next
             end
             jso[row["id"]][name] = dbe.length(query) > 0 ? dbe.extract(query,field) : "unknown"
             jso[row["id"]][name] = @hooks.format_field(name, jso[row["id"]][name])
