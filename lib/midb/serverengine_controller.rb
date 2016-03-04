@@ -114,10 +114,13 @@ module MIDB
                 if @config["privacy#{method.downcase}"] == true
                   MIDB::Interface::Server.info(:auth_required)
                   auth_req = true
-                  # If it's a GET request and we have a different key for GET methods...
-                  if method == "GET"
+                  
+                  # For GET and DELETE requests, the object of the digest is the endpoint
+                  if (method == "GET") || (method == "DELETE")
                     data = ep_file
                   end
+
+                  # If it's a GET request and we have a different key for GET methods...
                   if (@config["apigetkey"] != nil) && (method == "GET")
                     unauthenticated = (not headers.has_key? "Authentication") ||
                      (not MIDB::API::Security.check?(headers["Authentication"], data, @config["apigetkey"]))
@@ -129,6 +132,7 @@ module MIDB
                 # Proceed to handle the request
                 if unauthenticated
                   response_json = self.unauth_request
+                  puts ">> has header: #{headers.has_key? "Authentication"}"
                 else
                   MIDB::Interface::Server.info(:auth_success) if (not unauthenticated) && auth_req
                   if method == "GET"

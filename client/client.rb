@@ -9,7 +9,7 @@ require 'uri'
 require 'json'
 
 def create_header(body)
-  key = "gettin"
+  key = "example"
   #signature = URI.encode_www_form(body)
   signature = body
   hmac = HMAC::SHA1.new(key)
@@ -26,5 +26,8 @@ header = create_header(body)
 res = c.get("http://localhost:8081/users", body=body, header=header)
 puts res.body
 
+body = "5"
+header = create_header(body)
+res = c.delete("http://localhost:8081/users/5", body=body, header=header)
 
 

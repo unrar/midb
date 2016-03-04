@@ -2,8 +2,9 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased]
+## [2.0.0] - 2016-03-04
 ### Added
+- Script for simple HMAC Authentication digests (`/utils/hmac.rb`)
 - New hooks.
 - New boolean options `privacy:get`, `privacy:post`, `privacy:put` and `privacy:delete` to specify whether authentication
 is needed for these methods. Default: `false`, `true`, `true`, `true`.
@@ -19,7 +20,7 @@ the JSON hash; `/api/endpoint/field/pattern` returns a JSON hash of all the entr
 - More compacted code in the server engine. Some complicated logics were moved to methods.
 - `MIDB::Interface::Server.out_config` made more dynamic and compact.
 - Fixed the server engine to ignore everything after the `?` on endpoints to support GET authentication.
-- On GET requests, the HMAC **has** to be a digest of the endpoint. For example, if you send a GET request to `/api/users/1` then you have to make a HMAC digest of `users` with the api key. See `client.rb` for an example. Will be explaiend on the wiki when v2 is released.
+- On GET and DELETE requests, the HMAC **has** to be a digest of the endpoint. For example, if you send a GET request to `/api/users/1` then you have to make a HMAC digest of `users` with the api key. See `client.rb` for an example. Will be explained on the wiki when v2 is released.
 
 ## [1.1.0] - 2015-11-20
 ### Added
